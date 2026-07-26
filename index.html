@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Caja Permanente - Mi Tiendita S.A.</title>
+    <style>
+        :root {
+            --primary-bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-dark: #333333;
+            --text-muted: #777777;
+            --btn-blue: #2c3e50;
+            --btn-active: #ffffff;
+            --btn-text-active: #2c3e50;
+            --border-color: #cccccc;
+            --accent-green: #27ae60;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-bg);
+            margin: 0;
+            padding: 15px;
+            color: var(--text-dark);
+        }
+
+        .main-nav {
+            display: flex;
+            background-color: #d1d5db;
+            border-radius: 8px;
+            padding: 5px;
+            margin-bottom: 20px;
+            gap: 5px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 12px 8px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-dark);
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn.active {
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--btn-blue);
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 15px;
+            outline: none;
+            background-color: #fafafa;
+        }
+
+        input:focus {
+            border-color: var(--btn-blue);
+            background-color: #ffffff;
+        }
+
+        input[readonly] {
+            background-color: #eeeeee;
+            color: #555555;
+            cursor: not-allowed;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .col-code { flex: 3; }
+        .col-cant { flex: 1; }
+
+        button.btn-submit {
+            width: 100%;
+            background-color: var(--btn-blue);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        button.btn-submit:hover {
+            background-color: #1a252f;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 12px;
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Estilos del Ticket */
+        .ticket {
+            background: #fff;
+            border: 1px dashed #000;
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            color: #000;
+        }
+
+        .ticket-center {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .ticket-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .ticket-total {
+            text-align: right;
+            font-weight: bold;
+            font-size: 16px;
+            border-top: 1px dashed #000;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Navegación Principal -->
+        <nav class="main-nav">
+            <button type="button" class="nav-btn" onclick="switchView('venta-directa', this)">🛒 Venta<br>Directa</button>
+            <button type="button" class="nav-btn active" onclick="switchView('cuentas-cliente', this)">👥 Cuentas<br>Cliente</button>
+            <button type="button" class="nav-btn" onclick="switchView('inventario-cat', this)">📦 Inventario /<br>Catálogo</button>
+        </nav>
+
+        <!-- SECCIÓN: VENTA DIRECTA -->
+        <div id="venta-directa" class="view-section">
+            <section class="card">
+                <h2>Caja de Venta Directa</h2>
+                <form id="form-venta-directa" onsubmit="event.preventDefault();">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <input type="text" value="Público General" id="vd-cliente">
+                    </div>
+                    <div class="form-group">
+                        <label>Código del Producto</label>
+                        <input type="text" placeholder="Buscar código..." id="vd-codigo">
+                    </div>
+                    <div class="form-group">
+                        <label>Producto</label>
+                        <input type="text" id="vd-nombre" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Precio (Q)</label>
+                        <input type="number" id="vd-precio" placeholder="0.00" readonly>
+                    </div>
+                    <button type="button" class="btn-submit" style="background-color: var(--accent-green);">Agregar a la Lista</button>
+                    <button type="button" class="btn-submit">Procesar Pago Directo</button>
+                </form>
+            </section>
+        </div>
+
+        <!-- SECCIÓN: CUENTAS CLIENTE -->
+        <div id="cuentas-cliente" class="view-section active">
+            <section class="card">
+                <h2>Perfil de Cuenta Acumulativa</h2>
+                <form id="form-perfil" onsubmit="event.preventDefault();">
+                    <div class="form-group">
+                        <label for="nombre-cliente">Nombre del Cliente (Perfil)</label>
+                        <input type="text" id="nombre-cliente" placeholder="Ej. Selvin Rajpop" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-code">
+                            <label for="codigo-producto">Código Producto</label>
+                            <input type="text" id="codigo-producto" placeholder="Buscar...">
+                        </div>
+                        <div class="form-group col-cant">
+                            <label for="cantidad">Cant.</label>
+                            <input type="number" id="cantidad" value="1" min="1">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nombre-producto">Producto</label>
+                        <input type="text" id="nombre-producto" placeholder="Nombre automático" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="precio-producto">Precio (Q)</label>
+                        <input type="number" id="precio-producto" placeholder="0.00" step="0.01">
+                    </div>
+
+                    <button type="button" class="btn-submit">Guardar / Añadir al Perfil</button>
+                    
+                    <div class="action-row">
+                        <button type="button" class="btn-secondary" style="background-color: var(--accent-green);">Cobrar Cuenta Completa</button>
+                        <button type="button" class="btn-secondary">Cerrar Perfil</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card" style="margin-top: 20px;">
+                <h2>Perfiles Activos Guardados</h2>
+                <div style="color: var(--text-muted); text-align: center; padding: 10px 0;" id="lista-perfiles">
+                    No hay cuentas abiertas
+                </div>
+            </section>
+        </div>
+
+        <!-- SECCIÓN: INVENTARIO / CATÁLOGO -->
+        <div id="inventario-cat" class="view-section">
+            <section class="card">
+                <h2>Registrar Nuevo Producto al Inventario</h2>
+                <form id="form-inventario" onsubmit="event.preventDefault();">
+                    <div class="form-group">
+                        <label>Código único</label>
+                        <input type="text" placeholder="Ej. 74012345">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre del Artículo</label>
+                        <input type="text" placeholder="Ej. Azúcar Caña Real 1kg">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio de Venta (Q)</label>
+                        <input type="number" placeholder="0.00" step="0.01">
+                    </div>
+                    <button type="button" class="btn-submit">💾 Guardar en Catálogo</button>
+                </form>
+            </section>
+
+            <section class="card" style="margin-top: 20px;">
+                <h2>Catálogo de Productos Registrados</h2>
+                <div style="color: var(--text-muted); text-align: center; padding: 10px 0;">
+                    No hay productos en el catálogo
+                </div>
+            </section>
+        </div>
+
+        <!-- SECCIÓN DE COMPROBANTE CONSTANTE -->
+        <section class="card">
+            <h2>Comprobante de Compra</h2>
+            <div class="ticket">
+                <div class="ticket-center">
+                    <strong style="font-size: 16px;">MI TIENDITA S.A.</strong><br>
+                    Sumpango, Sacatepéquez<br>
+                    Tel: 5555-5555<br>
+                    --------------------------------
+                </div>
+                <div>
+                    <strong>Fecha:</strong> <span id="ticket-fecha">23/07/2026</span><br>
+                    <strong>Cliente:</strong> <span id="ticket-cliente">Público General</span><br>
+                    --------------------------------
+                </div>
+                <table class="ticket-table">
+                    <thead>
+                        <tr style="border-bottom: 1px dashed #000; text-align: left;">
+                            <th>Cant</th>
+                            <th>Prod</th>
+                            <th style="text-align: right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 10px 0; color: #555;">No hay productos</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="ticket-total">
+                    TOTAL: Q0.00
+                </div>
+                <div class="ticket-center" style="margin-top: 15px;">
+                    ¡Gracias por su preferencia!<br>
+                    Vuelva pronto
+                </div>
+            </div>
+            <button type="button" class="btn-submit" style="background-color: #e67e22; margin-top: 15px;">📸 Generar Foto del Ticket</button>
+        </section>
+
+        <!-- HISTORIAL -->
+        <section class="card">
+            <h2>Historial de Ventas Guardadas (Excel)</h2>
+            <div class="action-row" style="margin-bottom: 15px;">
+                <button type="button" class="btn-secondary" style="background-color: #27ae60;">Descargar Excel</button>
+                <button type="button" class="btn-secondary" style="background-color: #c0392b;">Borrar Historial</button>
+            </div>
+            <div style="color: var(--text-muted); text-align: center; padding: 10px 0;">
+                No hay ventas registradas en el historial
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function switchView(viewId, button) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.classList.remove('active');
+            });
+            // Mostrar la seleccionada
+            document.getElementById(viewId).classList.add('active');
+            
+            // Quitar clase activa a los botones de navegación
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Activar botón actual
+            button.classList.add('active');
+        }
+
+        // Seteo de fecha actual por defecto
+        const hoy = new Date();
+        document.getElementById('ticket-fecha').innerText = hoy.toLocaleDateString('es-GT');
+    </script>
+</body>
+</html>
